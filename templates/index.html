@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🎯 Bingo Card Validator</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        .container {
+            max-width: 900px;
+            width: 100%;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }
+        .header {
+            background: linear-gradient(135deg, #5f2c82 0%, #49a09d 100%);
+            color: white;
+            padding: 30px 40px;
+            text-align: center;
+        }
+        .header h1 {
+            font-size: 2.5rem;
+            font-weight: 600;
+            margin-bottom: 10px;
+            letter-spacing: -0.5px;
+        }
+        .header h1 i {
+            margin-right: 10px;
+            color: #ffd966;
+        }
+        .header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        .content {
+            padding: 40px;
+        }
+        .instruction {
+            background: #f8f9fa;
+            border-left: 4px solid #49a09d;
+            padding: 15px 20px;
+            border-radius: 8px;
+            margin-bottom: 30px;
+            font-size: 0.95rem;
+            color: #333;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .instruction i {
+            color: #49a09d;
+            font-size: 1.5rem;
+        }
+        .form-group {
+            margin-bottom: 25px;
+        }
+        label {
+            font-weight: 600;
+            display: block;
+            margin-bottom: 8px;
+            color: #2d3748;
+        }
+        textarea {
+            width: 100%;
+            height: 200px;
+            padding: 15px;
+            border: 2px solid #e2e8f0;
+            border-radius: 12px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.95rem;
+            resize: vertical;
+            transition: border-color 0.2s;
+        }
+        textarea:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102,126,234,0.1);
+        }
+        .file-input-wrapper {
+            position: relative;
+            display: inline-block;
+            width: 100%;
+        }
+        .file-input-wrapper input[type="file"] {
+            position: absolute;
+            left: -9999px;
+            opacity: 0;
+        }
+        .file-input-label {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            background: #edf2f7;
+            color: #2d3748;
+            padding: 12px 25px;
+            border-radius: 50px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: background 0.2s;
+            border: 2px dashed #cbd5e0;
+        }
+        .file-input-label:hover {
+            background: #e2e8f0;
+        }
+        .file-input-label i {
+            color: #667eea;
+        }
+        #file-name {
+            margin-left: 15px;
+            font-size: 0.9rem;
+            color: #718096;
+        }
+        button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 15px 40px;
+            font-size: 1.2rem;
+            font-weight: 600;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            box-shadow: 0 10px 20px rgba(102,126,234,0.3);
+        }
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 15px 30px rgba(102,126,234,0.4);
+        }
+        button:active {
+            transform: translateY(0);
+        }
+        button i {
+            font-size: 1.2rem;
+        }
+        .results {
+            margin-top: 40px;
+            background: #f8fafc;
+            border-radius: 16px;
+            padding: 25px;
+            border: 1px solid #e2e8f0;
+        }
+        .results h2 {
+            font-size: 1.8rem;
+            font-weight: 600;
+            color: #2d3748;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .results h2 i {
+            color: #48bb78;
+        }
+        .result-item {
+            padding: 12px 18px;
+            margin-bottom: 10px;
+            border-radius: 10px;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            animation: slideIn 0.3s ease;
+        }
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        .result-item.valid {
+            background: #f0fff4;
+            border-left: 6px solid #48bb78;
+            color: #22543d;
+        }
+        .result-item.invalid {
+            background: #fff5f5;
+            border-left: 6px solid #f56565;
+            color: #742a2a;
+        }
+        .result-item i {
+            font-size: 1.3rem;
+        }
+        .result-item.valid i {
+            color: #48bb78;
+        }
+        .result-item.invalid i {
+            color: #f56565;
+        }
+        .back-link {
+            margin-top: 30px;
+            text-align: center;
+        }
+        .back-link a {
+            color: #667eea;
+            text-decoration: none;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            transition: color 0.2s;
+        }
+        .back-link a:hover {
+            color: #764ba2;
+        }
+        .flash-messages {
+            background: #fff5f5;
+            border-left: 6px solid #f56565;
+            padding: 15px 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+        .flash-messages p {
+            color: #742a2a;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        @media (max-width: 600px) {
+            .header h1 {
+                font-size: 2rem;
+            }
+            .content {
+                padding: 20px;
+            }
+            button {
+                width: 100%;
+                justify-content: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>
+                <i class="fas fa-dice-d6"></i> Bingo Card Validator
+            </h1>
+            <p>Check your bingo cards against official 5x5 standards – B (1-15), I (16-30), N (31-45), G (46-60), O (61-75), with free space (0) in the center. Duplicate cards are flagged.</p>
+        </div>
+
+        <div class="content">
+            <div class="instruction">
+                <i class="fas fa-info-circle"></i>
+                <span>Paste your table (must have a header line starting with <strong>"card"</strong> and columns B, I, N, G, O). Each cell should contain 5 numbers separated by commas (e.g., <code>15,2,7,14,11</code>).</span>
+            </div>
+
+            <form method="post" action="/validate" enctype="multipart/form-data" id="validate-form">
+                <div class="form-group">
+                    <label for="text_input"><i class="fas fa-paste"></i> Paste card data</label>
+                    <textarea name="text_input" id="text_input" placeholder="Example:
+card	B	I	N	G	O	Action
+1	15,2,7,14,11	22,27,17,18,24	37,41,0,36,38	56,52,57,59,58	65,68,67,73,63	Edit	delete
+2	11,12,6,13,8	26,22,18,28,23	43,39,0,33,40	59,51,56,52,47	75,62,65,66,71	Edit	delete">{{ original_text or '' }}</textarea>
+                </div>
+
+                <div class="form-group">
+                    <label><i class="fas fa-upload"></i> Or upload a text file</label>
+                    <div class="file-input-wrapper">
+                        <input type="file" name="file" id="file" accept=".txt,.csv">
+                        <label for="file" class="file-input-label">
+                            <i class="fas fa-cloud-upload-alt"></i> Choose file
+                        </label>
+                        <span id="file-name">No file chosen</span>
+                    </div>
+                </div>
+
+                <button type="submit">
+                    <i class="fas fa-check-circle"></i> Validate Cards
+                </button>
+            </form>
+
+            <!-- Flash messages -->
+            {% with messages = get_flashed_messages() %}
+                {% if messages %}
+                    <div class="flash-messages">
+                        {% for message in messages %}
+                            <p><i class="fas fa-exclamation-triangle"></i> {{ message }}</p>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+            {% endwith %}
+
+            <!-- Validation results (only invalid cards shown, plus duplicate summary) -->
+            {% if invalid_msgs is defined or valid_count is defined %}
+                <div class="results">
+                    <h2>
+                        <i class="fas fa-clipboard-list"></i> Validation Results
+                    </h2>
+                    <p style="margin-bottom: 20px; font-size: 1.2rem;">
+                        <strong>{{ valid_count }} valid</strong> / 
+                        <strong style="color: #f56565;">{{ invalid_msgs|length }} invalid</strong> cards
+                    </p>
+                    
+                    {% if duplicate_groups %}
+                        <h3 style="margin: 20px 0 10px; color: #b7791f;">
+                            <i class="fas fa-copy"></i> Duplicate Cards
+                        </h3>
+                        {% for group in duplicate_groups %}
+                            <div class="result-item" style="background: #fefcbf; border-left-color: #ecc94b;">
+                                <i class="fas fa-clone" style="color: #b7791f;"></i>
+                                <span>Cards {{ group|join(', ') }} are identical</span>
+                            </div>
+                        {% endfor %}
+                    {% endif %}
+                    
+                    {% if invalid_msgs %}
+                        <h3 style="margin-bottom: 15px; color: #742a2a;">
+                            <i class="fas fa-exclamation-triangle"></i> Invalid Cards
+                        </h3>
+                        {% for msg in invalid_msgs %}
+                            <div class="result-item invalid">
+                                <i class="fas fa-times-circle"></i>
+                                <span>{{ msg }}</span>
+                            </div>
+                        {% endfor %}
+                    {% else %}
+                        <div class="result-item valid" style="background: #f0fff4; border-left-color: #48bb78;">
+                            <i class="fas fa-check-circle"></i>
+                            <span>All cards are valid and unique! 🎉</span>
+                        </div>
+                    {% endif %}
+                </div>
+                <div class="back-link">
+                    <a href="/"><i class="fas fa-arrow-left"></i> Validate another set</a>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('file').addEventListener('change', function(e) {
+            var fileName = e.target.files[0] ? e.target.files[0].name : 'No file chosen';
+            document.getElementById('file-name').textContent = fileName;
+        });
+    </script>
+</body>
+</html>
