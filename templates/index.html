@@ -261,7 +261,7 @@
             <h1>
                 <i class="fas fa-dice-d6"></i> Bingo Card Validator
             </h1>
-            <p>Check your bingo cards against official 5x5 standards – B (1-15), I (16-30), N (31-45), G (46-60), O (61-75), with free space (0) in the center. Duplicate cards are flagged.</p>
+            <p>Check your bingo cards against official 5x5 standards – B (1-15), I (16-30), N (31-45), G (46-60), O (61-75), with free space (0) in the center. Duplicate cards and missing numbers are flagged.</p>
         </div>
 
         <div class="content">
@@ -306,8 +306,8 @@ card	B	I	N	G	O	Action
                 {% endif %}
             {% endwith %}
 
-            <!-- Validation results (only invalid cards shown, plus duplicate summary) -->
-            {% if invalid_msgs is defined or valid_count is defined %}
+            <!-- Validation results (only invalid cards shown, plus missing numbers and duplicates) -->
+            {% if invalid_msgs is defined or valid_count is defined or missing_numbers is defined %}
                 <div class="results">
                     <h2>
                         <i class="fas fa-clipboard-list"></i> Validation Results
@@ -316,6 +316,15 @@ card	B	I	N	G	O	Action
                         <strong>{{ valid_count }} valid</strong> / 
                         <strong style="color: #f56565;">{{ invalid_msgs|length }} invalid</strong> cards
                     </p>
+                    
+                    {% if missing_numbers %}
+                        <div class="result-item" style="background: #fff3cd; border-left-color: #ffc107;">
+                            <i class="fas fa-exclamation-triangle" style="color: #856404;"></i>
+                            <span style="color: #856404;">
+                                <strong>Missing card numbers:</strong> {{ missing_numbers|join(', ') }}
+                            </span>
+                        </div>
+                    {% endif %}
                     
                     {% if duplicate_groups %}
                         <h3 style="margin: 20px 0 10px; color: #b7791f;">
