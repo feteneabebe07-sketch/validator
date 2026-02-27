@@ -1,10 +1,9 @@
 import os
 import re
-import tempfile
 from flask import Flask, render_template, request, flash
 
 app = Flask(__name__)
-app.secret_key = 'your-secret-key-here'  # Change for production
+app.secret_key = 'your-secret-key-here'  # Change for production!
 
 # ---------- Validation Logic ----------
 def parse_numbers(cell):
@@ -19,7 +18,7 @@ def parse_numbers(cell):
         try:
             numbers.append(int(p))
         except ValueError:
-            numbers.append(None)  # Mark invalid
+            numbers.append(None)  # mark invalid
     return numbers
 
 def validate_card(card_id, b_numbers, i_numbers, n_numbers, g_numbers, o_numbers):
@@ -46,7 +45,7 @@ def validate_card(card_id, b_numbers, i_numbers, n_numbers, g_numbers, o_numbers
             if num is None:
                 errors.append(f"{col_name}: non‑numeric value")
                 continue
-            # Free space: N column, third position
+            # Free space: N column, third position (0‑based index 2)
             if col_name == 'N' and pos == 2:
                 if num != 0:
                     errors.append(f"{col_name} center should be 0, got {num}")
@@ -116,7 +115,7 @@ def validate():
     elif 'file' in request.files:
         uploaded_file = request.files['file']
         if uploaded_file.filename != '':
-            # For simplicity, assume it's a text file
+            # Assume it's a text file
             text_data = uploaded_file.read().decode('utf-8')
         else:
             flash('No file selected.')
@@ -131,6 +130,24 @@ def validate():
         flash('No valid card data found. Check that the header line starts with "card".')
         return render_template('index.html')
 
+    # Extract card IDs as integers (for missing number detection)
+    card_ids = []
+    for card in cards:
+        try:
+            card_ids.append(int(card[0]))
+        except ValueError:
+            pass  # ignore non‑integer IDs for missing check
+
+    # Find missing numbers in the sequence (assume they should be consecutive)
+    missing_numbers = []
+    if card_ids:
+        card_ids.sort()
+        min_id = card_ids[0]
+        max_id = card_ids[-1]
+        expected = set(range(min_id, max_id + 1))
+        actual = set(card_ids)
+        missing_numbers = sorted(list(expected - actual))
+
     # First, run per-card validation and store results
     card_results = []  # list of (card_id, b, i, n, g, o, is_valid, message)
     for card in cards:
@@ -141,7 +158,6 @@ def validate():
     # Build fingerprints for duplicate detection
     fingerprint_map = {}
     for idx, (card_id, b, i, n, g, o, valid, msg) in enumerate(card_results):
-        # Use tuple of tuples as fingerprint (order matters)
         fingerprint = (tuple(b), tuple(i), tuple(n), tuple(g), tuple(o))
         fingerprint_map.setdefault(fingerprint, []).append((card_id, idx))
 
@@ -157,10 +173,8 @@ def validate():
                 # Update the card's result
                 card_id, b, i, n, g, o, old_valid, old_msg = card_results[idx]
                 if old_valid:
-                    # If it was valid before, now invalid due to duplicate
                     card_results[idx] = (card_id, b, i, n, g, o, False, f"Valid but {duplicate_msg}")
                 else:
-                    # Append duplicate info to existing error message
                     card_results[idx] = (card_id, b, i, n, g, o, False, old_msg + f"; {duplicate_msg}")
 
     # Separate valid and invalid for display
@@ -171,6 +185,7 @@ def validate():
                            invalid_msgs=invalid_msgs,
                            valid_count=len(valid_msgs),
                            duplicate_groups=duplicate_groups,
+                           missing_numbers=missing_numbers,
                            original_text=text_data)
 
 if __name__ == '__main__':
